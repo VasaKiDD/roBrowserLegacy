@@ -18,6 +18,8 @@ for (let i = 2; i < process.argv.length; i++) {
 }
 
 const port = parseInt(args.p || args.port || process.env.PORT || '5999', 10);
+// Interface to listen on, e.g. 127.0.0.1 for local play. Default: all interfaces.
+const host = typeof args.host === 'string' ? args.host : undefined;
 const redirectStr = args.r || args.redirect || '';
 const redirects = {};
 
@@ -30,12 +32,12 @@ if (redirectStr) {
 	});
 }
 
-console.log(`[wsProxy] Listening on port ${port}`);
+console.log(`[wsProxy] Listening on ${host ?? '*'}:${port}`);
 if (Object.keys(redirects).length > 0) {
 	console.log('[wsProxy] Configured redirects:', redirects);
 }
 
-const wss = new WebSocketServer({ port });
+const wss = new WebSocketServer({ port, host });
 
 wss.on('connection', (ws, req) => {
 	const from = req.socket.remoteAddress;
