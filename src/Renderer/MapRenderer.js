@@ -59,6 +59,9 @@ import WebGL from 'Utils/WebGL.js';
 const mat4 = glMatrix.mat4;
 const _pos = new Uint16Array(2);
 
+// Camera zoom the fogparametertable distances are tuned for (Camera default zoom)
+const C_DEFAULT_ZOOM = 125;
+
 /**
  * @param {string} mapname
  * @returns {string} map name without its extension
@@ -114,6 +117,8 @@ class MapRenderer {
 		exist: true,
 		far: 30,
 		near: 180,
+		baseFar: 30,
+		baseNear: 180,
 		factor: 1.0,
 		color: new Float32Array([1, 1, 1])
 	};
@@ -245,6 +250,14 @@ class MapRenderer {
 
 		// Update camera
 		Camera.update(tick);
+
+		// Fog distances are tuned for the default zoom: push them back as the camera
+		// zooms out, otherwise the whole map ends up past fog.far (solid fog color)
+		if (fog.exist) {
+			const zoomOffset = Math.max(0, (Camera.zoom - C_DEFAULT_ZOOM) / 2);
+			fog.near = fog.baseNear + zoomOffset;
+			fog.far = fog.baseFar + zoomOffset;
+		}
 
 		const modelView = Camera.modelView;
 		const projection = Camera.projection;
@@ -502,8 +515,10 @@ function onMapComplete(success, error) {
 	// Apply fog to map
 	this.fog.exist = !!(mapInfo && mapInfo.fog);
 	if (this.fog.exist) {
-		this.fog.near = mapInfo.fog.near * 240;
-		this.fog.far = mapInfo.fog.far * 240;
+		this.fog.baseNear = mapInfo.fog.near * 240;
+		this.fog.baseFar = mapInfo.fog.far * 240;
+		this.fog.near = this.fog.baseNear;
+		this.fog.far = this.fog.baseFar;
 		this.fog.factor = mapInfo.fog.factor;
 		this.fog.color.set(mapInfo.fog.color);
 	}
