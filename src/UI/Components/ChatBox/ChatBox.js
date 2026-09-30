@@ -962,7 +962,7 @@ ChatBox.onKeyDown = function OnKeyDown(event) {
 					return false;
 				}
 
-				if (event.getModifierState && event.getModifierState('AltGraph')) {
+				if ((event.getModifierState && event.getModifierState('AltGraph')) || KEYS.isMacOptionText(event)) {
 					event.stopImmediatePropagation();
 					return true;
 				}

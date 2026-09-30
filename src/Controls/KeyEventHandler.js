@@ -247,6 +247,28 @@ Object.defineProperty(KEYS, 'getDeepActiveElement', {
 });
 
 /**
+ * macOS has no AltGr key: Option types characters ('@' is Option+G on Swiss and
+ * French layouts) or starts a dead key, and browsers report it as Alt, not AltGraph.
+ *
+ * @param {KeyboardEvent} event keydown event
+ * @param {string} [platform] defaults to the browser's platform
+ * @return {boolean} the key press types text rather than triggering an ALT shortcut
+ */
+Object.defineProperty(KEYS, 'isMacOptionText', {
+	writable: false,
+	enumerable: false,
+	value: function isMacOptionText(event, platform = navigator.userAgentData?.platform || navigator.platform || '') {
+		return (
+			/^mac/i.test(platform) &&
+			event.altKey &&
+			!event.ctrlKey &&
+			!event.metaKey &&
+			(event.key.length === 1 || event.key === 'Dead')
+		);
+	}
+});
+
+/**
  * Export
  */
 export default KEYS;
